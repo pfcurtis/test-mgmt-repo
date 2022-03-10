@@ -1,0 +1,137 @@
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: paul-test-1
+  namespace: default
+spec:
+  clusterNetwork:
+    services:
+      cidrBlocks:
+      - 192.168.0.0/16
+  controlPlaneRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    kind: AzureManagedControlPlane
+    name: paul-test-1
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    kind: AzureManagedCluster
+    name: paul-test-1
+
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: AzureManagedControlPlane
+metadata:
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+  name: paul-test-1
+  namespace: default
+spec:
+  identityRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    kind: AzureClusterIdentity
+    name: cluster-identity
+  location: eastus
+  resourceGroupName: paul-test-1
+  sshPublicKey: ""
+  subscriptionID: 6bf943cd-75d6-4e1c-b2bf-b8691841d4ae
+  version: v1.22.6
+
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: AzureManagedCluster
+metadata:
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+  name: paul-test-1
+  namespace: default
+
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachinePool
+metadata:
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+  name: agentpool0
+  namespace: default
+spec:
+  clusterName: paul-test-1
+  replicas: 2
+  template:
+    metadata: {}
+    spec:
+      bootstrap:
+        dataSecretName: ""
+      clusterName: paul-test-1
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+        kind: AzureManagedMachinePool
+        name: agentpool0
+      version: v1.22.6
+
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: AzureManagedMachinePool
+metadata:
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+  name: agentpool0
+  namespace: default
+spec:
+  mode: System
+  osDiskSizeGB: 30
+  sku: Standard_D2s_v3
+
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachinePool
+metadata:
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+  name: agentpool1
+  namespace: default
+spec:
+  clusterName: paul-test-1
+  replicas: 2
+  template:
+    metadata: {}
+    spec:
+      bootstrap:
+        dataSecretName: ""
+      clusterName: paul-test-1
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+        kind: AzureManagedMachinePool
+        name: agentpool1
+      version: v1.22.6
+
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: AzureManagedMachinePool
+metadata:
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+  name: agentpool1
+  namespace: default
+spec:
+  mode: User
+  osDiskSizeGB: 40
+  sku: Standard_D2s_v3
+
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: AzureClusterIdentity
+metadata:
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+  labels:
+    clusterctl.cluster.x-k8s.io/move-hierarchy: "true"
+  name: cluster-identity
+  namespace: default
+spec:
+  allowedNamespaces: {}
+  clientID: bf5b6434-fc41-4938-94ad-0936d2319ec5
+  clientSecret:
+    name: cluster-identity-secret
+    namespace: default
+  tenantID: c1f32376-14df-4354-a5f5-806ccab11f4c
+  type: ServicePrincipal
