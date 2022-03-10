@@ -13,7 +13,7 @@ spec:
       apiVersion: cluster.x-k8s.io/v1beta1
       kind: Cluster
       metadata:
-        name: ${CLUSTER_NAME}
+        name: "${CLUSTER_NAME}"
         namespace: default
       spec:
         clusterNetwork:
@@ -23,16 +23,16 @@ spec:
         controlPlaneRef:
           apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
           kind: AzureManagedControlPlane
-          name: ${CLUSTER_NAME}
+          name: "${CLUSTER_NAME}"
         infrastructureRef:
           apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
           kind: AzureManagedCluster
-          name: ${CLUSTER_NAME}
+          name: "${CLUSTER_NAME}"
       ---
       apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
       kind: AzureManagedControlPlane
       metadata:
-        name: ${CLUSTER_NAME}
+        name: "${CLUSTER_NAME}"
         namespace: default
       spec:
         identityRef:
@@ -40,7 +40,7 @@ spec:
           kind: AzureClusterIdentity
           name: cluster-identity
         location: eastus
-        resourceGroupName: ${CLUSTER_NAME}
+        resourceGroupName: "${CLUSTER_NAME}"
         sshPublicKey: ""
         subscriptionID: 6bf943cd-75d6-4e1c-b2bf-b8691841d4ae
         version: v1.22.6
@@ -48,7 +48,7 @@ spec:
       apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
       kind: AzureManagedCluster
       metadata:
-        name: ${CLUSTER_NAME}
+        name: "${CLUSTER_NAME}"
         namespace: default
       ---
       apiVersion: cluster.x-k8s.io/v1beta1
@@ -57,14 +57,14 @@ spec:
         name: agentpool0
         namespace: default
       spec:
-        clusterName: ${CLUSTER_NAME}
+        clusterName: "${CLUSTER_NAME}"
         replicas: 2
         template:
           metadata: {}
           spec:
             bootstrap:
               dataSecretName: ""
-            clusterName: ${CLUSTER_NAME}
+            clusterName: "${CLUSTER_NAME}"
             infrastructureRef:
               apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
               kind: AzureManagedMachinePool
@@ -87,14 +87,14 @@ spec:
         name: agentpool1
         namespace: default
       spec:
-        clusterName: ${CLUSTER_NAME}
-        replicas: ${WORKER_NODE_COUNT}
+        clusterName: "${CLUSTER_NAME}"
+        replicas: "${WORKER_NODE_COUNT}"
         template:
           metadata: {}
           spec:
             bootstrap:
               dataSecretName: ""
-            clusterName: ${CLUSTER_NAME}
+            clusterName: "${CLUSTER_NAME}"
             infrastructureRef:
               apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
               kind: AzureManagedMachinePool
