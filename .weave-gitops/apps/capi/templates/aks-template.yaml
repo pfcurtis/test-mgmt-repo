@@ -1,0 +1,128 @@
+apiVersion: capi.weave.works/v1alpha1
+kind: CAPITemplate
+metadata:
+  name: aks-simple
+spec:
+  description: Simple Microsoft AKS Cluster
+  params:
+    - name: CLUSTER_NAME
+      description: The name for this cluster.
+    - name: WORKER_NODE_COUNT
+      description: Number of worker nodes to create.
+  resourcetemplates:
+      apiVersion: cluster.x-k8s.io/v1beta1
+      kind: Cluster
+      metadata:
+        name: ${CLUSTER_NAME}
+        namespace: default
+      spec:
+        clusterNetwork:
+          services:
+            cidrBlocks:
+            - 192.168.0.0/16
+        controlPlaneRef:
+          apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+          kind: AzureManagedControlPlane
+          name: ${CLUSTER_NAME}
+        infrastructureRef:
+          apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+          kind: AzureManagedCluster
+          name: ${CLUSTER_NAME}
+      ---
+      apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+      kind: AzureManagedControlPlane
+      metadata:
+        name: ${CLUSTER_NAME}
+        namespace: default
+      spec:
+        identityRef:
+          apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+          kind: AzureClusterIdentity
+          name: cluster-identity
+        location: eastus
+        resourceGroupName: ${CLUSTER_NAME}
+        sshPublicKey: ""
+        subscriptionID: 6bf943cd-75d6-4e1c-b2bf-b8691841d4ae
+        version: v1.22.6
+      ---
+      apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+      kind: AzureManagedCluster
+      metadata:
+        name: ${CLUSTER_NAME}
+        namespace: default
+      ---
+      apiVersion: cluster.x-k8s.io/v1beta1
+      kind: MachinePool
+      metadata:
+        name: agentpool0
+        namespace: default
+      spec:
+        clusterName: ${CLUSTER_NAME}
+        replicas: 2
+        template:
+          metadata: {}
+          spec:
+            bootstrap:
+              dataSecretName: ""
+            clusterName: ${CLUSTER_NAME}
+            infrastructureRef:
+              apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+              kind: AzureManagedMachinePool
+              name: agentpool0
+            version: v1.22.6
+      ---
+      apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+      kind: AzureManagedMachinePool
+      metadata:
+        name: agentpool0
+        namespace: default
+      spec:
+        mode: System
+        osDiskSizeGB: 30
+        sku: Standard_D2s_v3
+      ---
+      apiVersion: cluster.x-k8s.io/v1beta1
+      kind: MachinePool
+      metadata:
+        name: agentpool1
+        namespace: default
+      spec:
+        clusterName: ${CLUSTER_NAME}
+        replicas: ${WORKER_NODE_COUNT}
+        template:
+          metadata: {}
+          spec:
+            bootstrap:
+              dataSecretName: ""
+            clusterName: ${CLUSTER_NAME}
+            infrastructureRef:
+              apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+              kind: AzureManagedMachinePool
+              name: agentpool1
+            version: v1.22.6
+      ---
+      apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+      kind: AzureManagedMachinePool
+      metadata:
+        name: agentpool1
+        namespace: default
+      spec:
+        mode: User
+        osDiskSizeGB: 40
+        sku: Standard_D2s_v3
+      ---
+      apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+      kind: AzureClusterIdentity
+      metadata:
+        labels:
+          clusterctl.cluster.x-k8s.io/move-hierarchy: "true"
+        name: cluster-identity
+        namespace: default
+      spec:
+        allowedNamespaces: {}
+        clientID: bf5b6434-fc41-4938-94ad-0936d2319ec5
+        clientSecret:
+          name: cluster-identity-secret
+          namespace: default
+        tenantID: c1f32376-14df-4354-a5f5-806ccab11f4c
+        type: ServicePrincipal
